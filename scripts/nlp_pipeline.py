@@ -1,20 +1,29 @@
-from spell_checker import initialize_symspell, spell_check
-from grammar_checker import initialize_tools, grammar_check
+from spell_checker import spell_check, auto_correct, load_dictionary
+from grammar_checker import basic_grammar_check, auto_correct_grammar
 
-def nlp_pipeline(text):
-    sym_spell = initialize_symspell()
-    tokenizer, grammar_tool = initialize_tools()
+def run_spell_and_grammar_check(text, dictionary_path):
+    """
+    Run the spell and grammar check on the input text and return the results.
+    """
+    dictionary = load_dictionary(dictionary_path)
+    
+    # Spell check
+    misspelled_words = spell_check(text, dictionary)
+    
+    # Grammar check
+    grammar_issues = basic_grammar_check(text)
+    
+    return misspelled_words, grammar_issues
 
-    # Step 1: Spell Check
-    spell_corrected_text = spell_check(text, sym_spell)
+def auto_correct_text(text, dictionary_path):
+    """
+    Automatically correct misspelled words in the input text.
+    """
+    dictionary = load_dictionary(dictionary_path)
+    return auto_correct(text, dictionary)
 
-    # Step 2: Grammar Check
-    grammar_corrections = grammar_check(spell_corrected_text, grammar_tool)
-
-    return spell_corrected_text, grammar_corrections
-
-if __name__ == "__main__":
-    text = "අපි පාසල් යයි"
-    spell_corrected_text, grammar_corrections = nlp_pipeline(text)
-    print(f"Spell Corrected: {spell_corrected_text}")
-    print(f"Grammar Corrections: {grammar_corrections}")
+def auto_correct_grammar_text(text):
+    """
+    Automatically correct grammar mistakes in the input text.
+    """
+    return auto_correct_grammar(text)
