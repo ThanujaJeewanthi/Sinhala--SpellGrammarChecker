@@ -1,80 +1,54 @@
 import tkinter as tk
 from tkinter import scrolledtext
-from nlp_pipeline import run_spell_and_grammar_check, auto_correct_text, auto_correct_grammar_text
+from spell_and_grammar_checker import SpellAndGrammarChecker
 
-def run_spell_and_grammar_check_gui():
-    input_text = text_area.get("1.0", tk.END)
-    dictionary_path = 'path/to/sinhala_dictionary.txt'
+class SinhalaSpellGrammarCheckerApp:
+    def __init__(self, root, dictionary_path, rules_path):
+        self.root = root
+        self.root.title("Sinhala Spell and Grammar Checker")
+
+        # Initialize the combined checker
+        self.checker = SpellAndGrammarChecker(dictionary_path, rules_path)
+
+        # Input text label
+        self.input_label = tk.Label(root, text="Enter text:")
+        self.input_label.pack()
+
+        # Input text box
+        self.input_text = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=60, height=10)
+        self.input_text.pack()
+
+        # Check button
+        self.check_button = tk.Button(root, text="Check", command=self.check_text)
+        self.check_button.pack()
+
+        # Output text label
+        self.output_label = tk.Label(root, text="Corrected text:")
+        self.output_label.pack()
+
+        # Output text box (read-only)
+        self.output_text = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=60, height=10, state='disabled')
+        self.output_text.pack()
+
+    def check_text(self):
+        # Get the input text
+        input_text = self.input_text.get("1.0", tk.END).strip()
+        
+        # Process the text using spell and grammar checker
+        corrected_text = self.checker.check_text(input_text)
+        
+        # Display corrected text
+        self.output_text.configure(state='normal')
+        self.output_text.delete("1.0", tk.END)
+        self.output_text.insert(tk.END, corrected_text)
+        self.output_text.configure(state='disabled')
+
+if __name__ == "__main__":
+    # Paths to dictionary and grammar rules
+    dictionary_path = "E:/Semester 7/EC9640_AI/Spelling_and_Grammar_Checker_Sinhala/dictionaries/sinhala_dictionary.txt"
+    rules_path = "sentences.txt"
     
-    misspelled_words, grammar_issues = run_spell_and_grammar_check(input_text, dictionary_path)
-    
-    result_area.delete("1.0", tk.END)
-    
-    if not misspelled_words:
-        result_area.insert(tk.END, "No spelling errors found!\n")
-    else:
-        result_area.insert(tk.END, "Misspelled words:\n")
-        result_area.insert(tk.END, ", ".join(misspelled_words) + "\n")
-    
-    if not grammar_issues:
-        result_area.insert(tk.END, "No grammar issues found!\n")
-    else:
-        result_area.insert(tk.END, "Grammar issues:\n")
-        result_area.insert(tk.END, "\n".join(grammar_issues) + "\n")
-
-def auto_correct_text_gui():
-    input_text = text_area.get("1.0", tk.END)
-    dictionary_path = 'path/to/sinhala_dictionary.txt'
-    corrected_text = auto_correct_text(input_text, dictionary_path)
-    
-    text_area.delete("1.0", tk.END)
-    text_area.insert(tk.END, corrected_text)
-
-def auto_correct_grammar_text_gui():
-    input_text = text_area.get("1.0", tk.END)
-    corrected_text = auto_correct_grammar_text(input_text)
-    
-    text_area.delete("1.0", tk.END)
-    text_area.insert(tk.END, corrected_text)
-
-def reset_text():
-    text_area.delete("1.0", tk.END)
-    result_area.delete("1.0", tk.END)
-
-# GUI setup
-root = tk.Tk()
-root.title("Sinhala Spell and Grammar Checker")
-root.geometry("500x500")
-
-# Frame for input and buttons
-frame = tk.Frame(root)
-frame.pack(padx=10, pady=10)
-
-# Input area for the user to type text
-text_area_label = tk.Label(frame, text="Enter Sinhala text:")
-text_area_label.pack()
-
-text_area = scrolledtext.ScrolledText(frame, wrap=tk.WORD, width=50, height=10)
-text_area.pack(pady=5)
-
-# Buttons for checking and correcting text
-check_button = tk.Button(frame, text="Check Spelling & Grammar", command=run_spell_and_grammar_check_gui)
-check_button.pack(pady=5)
-
-auto_correct_button = tk.Button(frame, text="Auto Correct Spelling", command=auto_correct_text_gui)
-auto_correct_button.pack(pady=5)
-
-auto_correct_grammar_button = tk.Button(frame, text="Auto Correct Grammar", command=auto_correct_grammar_text_gui)
-auto_correct_grammar_button.pack(pady=5)
-
-reset_button = tk.Button(frame, text="Reset", command=reset_text)
-reset_button.pack(pady=5)
-
-# Frame for displaying results
-result_label = tk.Label(root, text="Results:")
-result_label.pack(pady=5)
-
-result_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=50, height=10)
-result_area.pack(pady=5)
-
-root.mainloop()
+    # Initialize the Tkinter app
+    root = tk.Tk()
+    app = SinhalaSpellGrammarCheckerApp(root, dictionary_path, rules_path)
+    root.mainloop()

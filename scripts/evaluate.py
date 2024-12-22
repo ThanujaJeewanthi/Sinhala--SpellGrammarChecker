@@ -1,25 +1,30 @@
-from nlp_pipeline import nlp_pipeline
+from scripts.spell_and_grammar_checker import SpellAndGrammarChecker
 
-def evaluate_accuracy(paragraphs):
-    total_errors = 0
-    corrected_errors = 0
+def evaluate_accuracy(paragraphs, ground_truths, dictionary_path):
+    checker = SpellAndGrammarChecker(dictionary_path)
 
-    for text in paragraphs:
-        spell_corrected_text, grammar_corrections = nlp_pipeline(text)
-        print(f"Original: {text}")
-        print(f"Corrected: {spell_corrected_text}")
-        print(f"Corrections: {grammar_corrections}")
-        total_errors += len(grammar_corrections)
-        corrected_errors += sum(1 for correction in grammar_corrections if correction)
+    correct = 0
+    for i, paragraph in enumerate(paragraphs):
+        corrected_text = checker.check_text(paragraph)
+        print(f"Original: {paragraph}")
+        print(f"Corrected: {corrected_text}")
+        print(f"Expected: {ground_truths[i]}\n")
+        
+        if corrected_text.strip() == ground_truths[i].strip():
+            correct += 1
 
-    accuracy = (corrected_errors / total_errors) * 100 if total_errors > 0 else 100
-    print(f"Accuracy: {accuracy:.2f}%")
+    accuracy = (correct / len(paragraphs)) * 100
     return accuracy
 
 if __name__ == "__main__":
     paragraphs = [
-        "මම පාඩම් කරමු",
-        "ඔහු ඊයේ පාසල් යයි",
-        "අපි පාසල් යයි"
+        "මම පන්සල් යන්නෙ",
+        "අපි ගමනක් යමුද",
     ]
-    evaluate_accuracy(paragraphs)
+    ground_truths = [
+        "මම පන්සලට යන්නෙ.",
+        "අපි ගමනක් යමුද?",
+    ]
+
+    accuracy = evaluate_accuracy(paragraphs, ground_truths, "dictionaries/sinhala_dictionary.txt")
+    print(f"Accuracy: {accuracy}%")

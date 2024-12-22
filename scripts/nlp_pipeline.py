@@ -1,29 +1,12 @@
-from spell_checker import spell_check, auto_correct, load_dictionary
-from grammar_checker import basic_grammar_check, auto_correct_grammar
+from scripts.spell_checker import SpellChecker
+from scripts.grammar_checker import SinhalaGrammarCorrector
 
-def run_spell_and_grammar_check(text, dictionary_path):
-    """
-    Run the spell and grammar check on the input text and return the results.
-    """
-    dictionary = load_dictionary(dictionary_path)
-    
-    # Spell check
-    misspelled_words = spell_check(text, dictionary)
-    
-    # Grammar check
-    grammar_issues = basic_grammar_check(text)
-    
-    return misspelled_words, grammar_issues
+class NLPPipeline:
+    def __init__(self, dictionary_path, model_folder):
+        self.spell_checker = SpellChecker(dictionary_path)
+        self.grammar_checker = SinhalaGrammarCorrector(model_folder)
 
-def auto_correct_text(text, dictionary_path):
-    """
-    Automatically correct misspelled words in the input text.
-    """
-    dictionary = load_dictionary(dictionary_path)
-    return auto_correct(text, dictionary)
-
-def auto_correct_grammar_text(text):
-    """
-    Automatically correct grammar mistakes in the input text.
-    """
-    return auto_correct_grammar(text)
+    def process_text(self, text):
+        corrected_spelling = self.spell_checker.correct_spelling(text)
+        corrected_grammar = self.grammar_checker.correct_sentence(corrected_spelling)
+        return corrected_grammar

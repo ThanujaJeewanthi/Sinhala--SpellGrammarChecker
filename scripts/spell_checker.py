@@ -1,50 +1,22 @@
-# spell_checker.py
-import re
 import difflib
+import re
 
-def preprocess_text(text):
-    """
-    Preprocess the given text by removing unwanted characters and normalizing it.
-    This function will keep only Sinhala characters and spaces.
-    """
-    text = re.sub(r'[^\u0D80-\u0DFF\s]', '', text)
-    text = text.strip().lower()
-    return text
+class SpellChecker:
+    def __init__(self, dictionary_path):
+        with open(dictionary_path, 'r', encoding='utf-8') as f:
+            self.dictionary = set(f.read().splitlines())
 
-def tokenize(text):
-    """
-    Tokenize the text by splitting it into individual words based on spaces.
-    """
-    return text.split()
+    def check_spelling(self, text):
+        words = re.findall(r'\w+|[^\w\s]', text, re.UNICODE)  # Preserve punctuation
+        corrected_words = [self.correct_word(word) for word in words]
+        return ''.join(corrected_words) if words[-1] not in ['.', ',', '?', '!'] else ' '.join(corrected_words)
 
-def load_dictionary(dictionary_path):
-    """
-    Load the Sinhala dictionary from a file and return it as a set.
-    """
-    with open(dictionary_path, 'r', encoding='utf-8') as f:
-        return set(f.read().splitlines())
+    def correct_word(self, word):
+        if not word.isalpha():  # Skip punctuation
+            return word
 
-def spell_check(text, dictionary):
-    """
-    Check for misspelled words in the given text.
-    """
-    words = tokenize(preprocess_text(text))
-    misspelled = [word for word in words if word not in dictionary]
-    return misspelled
+        if word in self.dictionary:
+            return word
 
-def auto_correct(text, dictionary):
-    """
-    Auto correct the misspelled words by replacing them with the closest match from the dictionary.
-    """
-    words = tokenize(preprocess_text(text))
-    corrected_words = []
-    for word in words:
-        if word in dictionary:
-            corrected_words.append(word)
-        else:
-            closest_matches = difflib.get_close_matches(word, dictionary, n=1)
-            if closest_matches:
-                corrected_words.append(closest_matches[0])
-            else:
-                corrected_words.append(word)
-    return ' '.join(corrected_words)
+        suggestions = difflib.get_close_matches(word, self.dictionary, n=1)
+        return suggestions[0] if suggestions else word

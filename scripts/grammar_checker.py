@@ -1,44 +1,31 @@
 import re
 
-def preprocess_text(text):
-    """
-    Preprocess the given text by removing unwanted characters and normalizing it.
-    """
-    text = text.strip().lower()
-    return text
+class GrammarChecker:
+    def __init__(self, rules):
+        self.rules = rules
 
-def basic_grammar_check(text):
-    """
-    Perform a basic grammar check on the given text.
-    This function checks for repeated words and punctuation issues.
-    """
-    grammar_issues = []
-    words = text.split()
+    def check_grammar(self, sentence):
+        for incorrect, correct in self.rules.items():
+            sentence = re.sub(rf'\b{re.escape(incorrect)}\b', correct, sentence)
+        return sentence
 
-    for i in range(len(words) - 1):
-        if words[i] == words[i + 1]:
-            grammar_issues.append(f"Repeated word: '{words[i]}'")
-    
-    if not re.match(r'.*[.!?]$', text.strip()):
-        grammar_issues.append("The text does not end with proper punctuation (., !, ?).")
-    
-    return grammar_issues
-
-def auto_correct_grammar(text):
-    """
-    Automatically correct basic grammar mistakes in the input text.
-    This function will correct repeated words and add punctuation if missing.
-    """
-    words = text.split()
-    corrected_words = []
-
-    for i in range(len(words)):
-        if i == 0 or words[i] != words[i - 1]:
-            corrected_words.append(words[i])
-
-    corrected_text = ' '.join(corrected_words)
-
-    if not re.match(r'.*[.!?]$', corrected_text.strip()):
-        corrected_text += '.'
-
-    return corrected_text
+    @staticmethod
+    def load_rules_from_file(file_path):
+        rules = {}
+        temp_map = {}  # Temporary map to link incorrect and correct sentences
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                label, text = line.strip().split(maxsplit=1)
+                if label == "0":  # Incorrect sentences
+                    temp_map[text] = None
+                elif label == "1":  # Correct sentences
+                    # Assign the correct sentence to the last incorrect sentence
+                    for incorrect in list(temp_map):
+                        if temp_map[incorrect] is None:
+                            temp_map[incorrect] = text
+                            break
+        # Map incorrect to correct
+        for incorrect, correct in temp_map.items():
+            if correct:
+                rules[incorrect] = correct
+        return rules
