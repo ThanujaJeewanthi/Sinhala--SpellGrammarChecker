@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+</head>
+<body>
+    <h2>Corrected Text:</h2>
+    <p>{{ corrected_text }}</p>
+    <h2>Grammar Errors:</h2>
+    <ul>
+        {% for error in grammar_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    <a href="/">Go Back</a>
+</body>
+</html>

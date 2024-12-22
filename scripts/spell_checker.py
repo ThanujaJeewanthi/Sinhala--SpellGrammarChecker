@@ -1,22 +1,23 @@
-from spellchecker import SpellChecker
-import os
+from symspellpy import SymSpell, Verbosity
 
-# Load the custom dictionary
-spell = SpellChecker(language=None)
-dictionary_path = "../dictionaries/sinhala_dictionary.txt"
-with open(dictionary_path, "r", encoding="utf-8") as f:
-    sinhala_words = f.read().splitlines()
-    spell.word_frequency.load_words(sinhala_words)
+def initialize_symspell():
+    sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
+    dictionary_path = "../dictionaries/sinhala_dictionary.txt"
+    sym_spell.load_dictionary(dictionary_path, 0, 1)
+    return sym_spell
 
-# Correct spelling in a sentence
-def correct_spelling(sentence):
-    words = sentence.split()
-    corrected_words = [
-        spell.correction(word) if word not in sinhala_words else word for word in words
-    ]
+def spell_check(text, sym_spell):
+    corrected_words = []
+    for word in text.split():
+        suggestions = sym_spell.lookup(word, Verbosity.CLOSEST, max_edit_distance=2)
+        if suggestions:
+            corrected_words.append(suggestions[0].term)
+        else:
+            corrected_words.append(word)
     return " ".join(corrected_words)
 
 if __name__ == "__main__":
-    test_sentence = "වාහන පොත බලා ගෙදර වේගයෙන් යනලදී"
-    print("Original:", test_sentence)
-    print("Corrected:", correct_spelling(test_sentence))
+    sym_spell = initialize_symspell()
+    text = "මම පාඩම් කරමු"
+    corrected_text = spell_check(text, sym_spell)
+    print(f"Corrected Text: {corrected_text}")

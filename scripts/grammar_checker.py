@@ -1,33 +1,24 @@
-# Rule-based grammar correction
+from sinling import SinhalaTokenizer
+from language_tool_python import LanguageTool
 
-# Correct subject-verb agreement
-def correct_subject_verb_agreement(sentence):
-    corrections = {
-        "අපි පාසල් යයි": "අපි පාසල් යමු",
-        "මම පාඩම් කරමු": "මම පාඩම් කරමි",
-    }
-    for incorrect, correct in corrections.items():
-        if incorrect in sentence:
-            sentence = sentence.replace(incorrect, correct)
-    return sentence
+def initialize_tools():
+    tokenizer = SinhalaTokenizer()
+    grammar_tool = LanguageTool('si')  # Sinhala language model.
+    return tokenizer, grammar_tool
 
-# Correct tense errors
-def correct_tense_errors(sentence):
-    corrections = {
-        "ඔහු ඊයේ පාසල් යයි": "ඔහු ඊයේ පාසල් ගියේය.",
-    }
-    for incorrect, correct in corrections.items():
-        if incorrect in sentence:
-            sentence = sentence.replace(incorrect, correct)
-    return sentence
-
-# Combine grammar corrections
-def correct_grammar(sentence):
-    sentence = correct_subject_verb_agreement(sentence)
-    sentence = correct_tense_errors(sentence)
-    return sentence
+def grammar_check(text, grammar_tool):
+    matches = grammar_tool.check(text)
+    corrections = []
+    for match in matches:
+        if match.replacements:
+            corrections.append({
+                'error': match.context,
+                'suggestion': match.replacements[0]
+            })
+    return corrections
 
 if __name__ == "__main__":
-    test_sentence = "ඔහු ඊයේ පාසල් යයි"
-    print("Original:", test_sentence)
-    print("Grammar Corrected:", correct_grammar(test_sentence))
+    tokenizer, grammar_tool = initialize_tools()
+    text = "අපි පාසල් යයි"
+    corrections = grammar_check(text, grammar_tool)
+    print(f"Grammar Corrections: {corrections}")
